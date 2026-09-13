@@ -3,6 +3,7 @@ export type {
   Skill, SkillReference, SkillsResponse, Thread, Turn,
 } from '../../../apps/desktop/src/pages/codexGui/types';
 import type { GuiEvent, Model, SkillReference, Thread } from '../../../apps/desktop/src/pages/codexGui/types';
+import type { AttachmentReference } from '../../../apps/desktop/src/pages/codexGui/attachmentTypes';
 import type { ConnectionMode } from '../protocol';
 import { DEFAULT_COMPOSER, type ComposerSettings } from '../composer';
 import { emptySidebar, type SidebarSnapshot } from '../sidebar';
@@ -12,6 +13,7 @@ export interface SendInput {
   text: string;
   images?: string[];
   skills?: SkillReference[];
+  attachments?: AttachmentReference[];
   model?: string;
   effort?: string;
   access: ComposerSettings['access'];
@@ -22,6 +24,8 @@ export interface ChatProject { cwd: string; label: string }
 export interface ChatState {
   mode: ConnectionMode;
   ready: boolean;
+  connecting: boolean;
+  retryAt: number | null;
   threads: Thread[];
   selected: Thread | null;
   draftProject: ChatProject | null;
@@ -47,7 +51,8 @@ export interface ChatState {
 }
 
 export function initialChatState(): ChatState {
-  return { mode: 'offline', ready: false, threads: [], selected: null, draftProject: null, selectedArchived: false,
+  return { mode: 'offline', ready: false, connecting: false, retryAt: null,
+    threads: [], selected: null, draftProject: null, selectedArchived: false,
     models: [], approvals: [], cursor: null, queue: emptyQueue(), queueBusy: false,
     settings: { ...DEFAULT_COMPOSER }, settingsBusy: false, settingsError: '', sidebar: emptySidebar(),
     search: '', archived: false, loading: false, historyLoading: false, historyLoadingMore: false,
