@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChatImageError, MAX_CHAT_IMAGES, validateChatImages, type DraftImage } from '../attachments';
 import type { SendInput } from './types';
+import type { AttachmentReference } from '../../../apps/desktop/src/pages/codexGui/attachmentTypes';
 import type { ComposerSettings } from '../composer';
 import type { Skill } from './types';
 import { draftSkills, editSkillDraft, emptySkillDraft, insertDraftSkill, type TextSelection } from './skillDraft';
@@ -59,16 +60,17 @@ export function useChatDraft({ threadId, sending, disabled, selection, send }: O
       if (current === generation.current) { busy.current = false; setPicking(false); }
     }
   };
-  const submit = async (override: { text?: string; images?: string[] } = {}) => {
+  const submit = async (override: { text?: string; images?: string[]; attachments?: AttachmentReference[] } = {}) => {
     const submittedText = override.text ?? text;
     const submittedImages = override.images ?? images.map((image) => image.url);
     if (disabled || sending || busy.current || submitting.current
-      || (!submittedText.trim() && !submittedImages.length)) return false;
+      || (!submittedText.trim() && !submittedImages.length && !override.attachments?.length)) return false;
     const current = generation.current;
     submitting.current = true; setError('');
     try {
       const skills = draftSkills(content);
       const sent = await send({ text: submittedText, images: submittedImages, ...selection,
+        ...(override.attachments?.length ? { attachments: override.attachments } : {}),
         ...(skills.length ? { skills } : {}) });
       if (!sent || current !== generation.current) return false;
       setContent((value) => value.text === text ? emptySkillDraft() : value);
@@ -85,6 +87,14 @@ export function useChatDraft({ threadId, sending, disabled, selection, send }: O
     if (sending || busy.current || submitting.current) return;
     setImages((value) => value.filter((image) => image.id !== id)); setError('');
   };
-  return { text, setText, insertSkill, removeText, images, error, picking, addImages, removeImage, submit,
+  const replaceImage = (original: DraftImage, url: string) => {
+    if (sending || busy.current || submitting.current || !images.includes(original)) {
+      throw new ChatImageError('图片已变更，请重新打开后编辑。');
+    }
+    validateChatImages(images.map((image) => image === original ? url : image.url));
+    setImages((current) => current.map((image) => image === original ? { ...image, url } : image));
+    setError('');
+  };
+  return { text, setText, insertSkill, removeText, images, error, picking, addImages, removeImage, replaceImage, submit,
     hasContent: Boolean(text.trim() || images.length) };
 }
