@@ -1,6 +1,6 @@
 import { applications, isEnabledLanguage, languageOptions, resolveLanguage, type EnabledLanguage } from '@remoteai/i18n';
 
-/** Legacy copy accepts released languages; selectors and persistence validate their application's policy. */
+/** Client adapters accept released languages; selectors and persistence validate each application policy. */
 export type Language = EnabledLanguage;
 export const DEFAULT_LANGUAGE: Language = 'en';
 export const LANGUAGE_OPTIONS = languageOptions(applications.native);
