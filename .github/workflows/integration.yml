@@ -4,6 +4,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      host_ref:
+        description: Compatible parent branch or revision
+        default: master
+        type: string
 
 permissions:
   contents: read
@@ -16,8 +21,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: piperhex/remoteai
-          ref: 5c4ec49c9f60a8e609a3b39dcf0390457045259c
+          ref: ${{ inputs.host_ref || vars.REMOTEAI_HOST_REF || 'master' }}
           path: host
+      - run: git submodule update --init packages/i18n apps/web apps/native
+        working-directory: host
       - name: Checkout shared sources under test
         uses: actions/checkout@v4
         with:
@@ -29,13 +36,15 @@ jobs:
           cache-dependency-path: host/package-lock.json
       - run: npm ci
         working-directory: host
+      - run: npm run check:boundaries
+        working-directory: host
       - run: npm run check:i18n
         working-directory: host
       - run: npm run build:desktop
         working-directory: host
-      - run: npm run check -w @codex-switch/web
+      - run: npm run export:web && npm ci --prefix apps/web && npm run check:web
         working-directory: host
-      - run: npm run check -w @codex-switch/native
+      - run: npm run export:native && npm ci --prefix apps/native && npm --prefix apps/native run check
         working-directory: host
       - name: Verify shared browser and protocol logic
         run: >-
@@ -44,5 +53,5 @@ jobs:
           src/remoteChat/streamFrame.test.ts src/pages/codexGui/fontSizePlugin.test.ts
         working-directory: host
       - name: Verify shared native protocol logic
-        run: npm exec -w @codex-switch/native -- vitest run src/chat/packetCipher.test.ts
+        run: npm --prefix apps/native test -- src/chat/packetCipher.test.ts
         working-directory: host

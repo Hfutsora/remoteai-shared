@@ -3,9 +3,12 @@
 - Keep these instructions in English. This repository owns Remote AI's shared source modules.
 - In the parent repository this checkout lives at `shared/`. Preserve those paths and the existing
   desktop local, desktop remote, mobile and web behavior when changing shared code.
-- This is a source submodule, not a standalone npm application. Some modules still import application
-  adapters and types. Validate in a compatible `piperhex/remoteai` checkout; do not add duplicate
-  application implementations here merely to make the source tree build alone.
+- This is a source submodule, not a standalone npm application. Applications consume shared sources;
+  shared sources must never import application internals. Keep reusable types and platform transports
+  here and pass application-specific services through typed interfaces. Validate in a compatible
+  `piperhex/remoteai` checkout with `node shared/scripts/check-boundaries.mjs --host .`.
+- `dependencies.json` owns the dependency contract used by exported browser source snapshots. Keep
+  React and host UI contexts deduplicated; Native's React Native runtime retains its own dependencies.
 - Translation resources belong to `@remoteai/i18n`. Keep existing public package imports, language
   availability and fallback behavior; never introduce a second translation catalog here.
 - Preserve the parent application's typography, themes, accessibility and layout conventions.
