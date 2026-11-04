@@ -1,0 +1,48 @@
+name: Shared source integration
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  consumers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout compatible application sources
+        uses: actions/checkout@v4
+        with:
+          repository: piperhex/remoteai
+          ref: 5c4ec49c9f60a8e609a3b39dcf0390457045259c
+          path: host
+      - name: Checkout shared sources under test
+        uses: actions/checkout@v4
+        with:
+          path: host/shared
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: host/package-lock.json
+      - run: npm ci
+        working-directory: host
+      - run: npm run check:i18n
+        working-directory: host
+      - run: npm run build:desktop
+        working-directory: host
+      - run: npm run check -w @codex-switch/web
+        working-directory: host
+      - run: npm run check -w @codex-switch/native
+        working-directory: host
+      - name: Verify shared browser and protocol logic
+        run: >-
+          npm exec -w @codex-switch/desktop -- vitest run
+          src/remoteChat/packetCipher.test.ts src/remoteChat/downloadRetry.test.ts
+          src/remoteChat/streamFrame.test.ts src/pages/codexGui/fontSizePlugin.test.ts
+        working-directory: host
+      - name: Verify shared native protocol logic
+        run: npm exec -w @codex-switch/native -- vitest run src/chat/packetCipher.test.ts
+        working-directory: host
