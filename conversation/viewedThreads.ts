@@ -15,6 +15,10 @@ export function watchConversation(owner: object, threadId: string | null): Promi
     revision++;
   }
   if (!isDesktopApp) return Promise.resolve();
+  return synchronize();
+}
+
+function synchronize(): Promise<void> {
   if (!pending && applied !== revision) {
     pending = (async () => {
       while (applied !== revision) {
@@ -24,5 +28,7 @@ export function watchConversation(owner: object, threadId: string | null): Promi
       }
     })().finally(() => { pending = undefined; });
   }
-  return pending ?? Promise.resolve();
+  // A selection can change after the loop returns but before its finally callback runs.
+  // Every waiter must include that last change, including one arriving in that microtask gap.
+  return (pending ?? Promise.resolve()).then(() => applied === revision ? undefined : synchronize());
 }
