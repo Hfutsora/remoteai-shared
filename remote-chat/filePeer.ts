@@ -1,12 +1,13 @@
 import { HotPeer, type RecoverySignal } from './hotPeer';
 import type { LinkOptions } from './linkOptions';
-import type { BulkTransport } from './bulkTransport';
+import type { BinaryChannel, BulkTransport } from './bulkTransport';
 import type { Channel } from './protocol';
 
 /** Independent ICE generations and keepalives ensure file recovery never replaces the chat peer. */
 export class FilePeer {
   private readonly peer: HotPeer;
   private channel?: Channel;
+  private fileChannel?: BinaryChannel;
   private lastPong = 0;
   private lastPing = 0;
   constructor(options: LinkOptions, bulk: BulkTransport) {
@@ -14,7 +15,13 @@ export class FilePeer {
       createPeer: options.createPeer,
       signal: signal => options.signal({ type: 'signal', sessionId: options.sessionId,
         payload: { ...signal, lane: 'file' } }),
-      bulkChannel: channel => bulk.attach(channel),
+      bulkChannel: channel => {
+        this.fileChannel = channel; bulk.attach(channel);
+        channel.onClose(() => {
+          if (this.fileChannel !== channel) return;
+          this.lastPong = 0; this.channel?.close();
+        });
+      },
       disconnected: () => { this.lastPong = 0; },
       channel: channel => {
         this.channel?.close(); this.channel = channel; this.lastPong = 0;
