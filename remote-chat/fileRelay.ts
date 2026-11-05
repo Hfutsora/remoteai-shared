@@ -92,5 +92,5 @@ export class FileRelay implements BulkRelay {
     try { await socket.sendBulk(this.options.sessionId, records); }
     catch { this.failed(socket); throw new BulkError('PATH_UNAVAILABLE'); }
   };
-  close() { this.closed = true; this.disconnect(); }
+  close() { if (this.closed) return; this.closed = true; this.disconnect(); }
 }

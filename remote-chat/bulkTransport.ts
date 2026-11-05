@@ -2,6 +2,9 @@ import { BULK_LIMITS, BulkError, bulkAssert } from './bulkLimits';
 import { decodeBulkRecord } from './bulkProtocol';
 import type { ConnectionMode } from './protocol';
 
+const PATH_READY_TIMEOUT_MS = 15_000;
+const PATH_READY_POLL_MS = 25;
+
 export type BulkPath = 'direct' | 'relay';
 export interface BinaryChannel {
   readonly maxRecordBytes?: number;
@@ -79,11 +82,12 @@ export class BulkTransport {
     const started = Date.now();
     while (!this.path) {
       bulkAssert(!signal?.aborted, 'CANCELLED');
-      bulkAssert(!this.closed && this.mode !== 'offline' && Date.now() - started < 15_000, 'PATH_UNAVAILABLE');
-      await new Promise(resolve => setTimeout(resolve, 25));
+      bulkAssert(!this.closed && this.mode !== 'offline' && Date.now() - started < PATH_READY_TIMEOUT_MS, 'PATH_UNAVAILABLE');
+      await new Promise(resolve => setTimeout(resolve, PATH_READY_POLL_MS));
     }
   }
   attach(channel: BinaryChannel, source: 'rtc' | 'native' = 'rtc') {
+    if (this.closed) { channel.close(); return; }
     if (this.channels.get(source) === channel) return;
     const previous = this.channels.get(source);
     this.channels.set(source, channel);
@@ -210,6 +214,7 @@ export class BulkTransport {
     for (const callback of [...this.invalidated]) callback();
   }
   close() {
+    if (this.closed) return;
     this.closed = true;
     this.invalidate(); this.mode = 'offline';
     for (const stream of this.streams.values()) stream.closed();

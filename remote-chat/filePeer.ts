@@ -3,6 +3,9 @@ import type { LinkOptions } from './linkOptions';
 import type { BinaryChannel, BulkTransport } from './bulkTransport';
 import type { Channel } from './protocol';
 
+const PROBE_INTERVAL_MS = 1000;
+const PROBE_TIMEOUT_MS = 3000;
+
 /** Independent ICE generations and keepalives ensure file recovery never replaces the chat peer. */
 export class FilePeer {
   private readonly peer: HotPeer;
@@ -39,11 +42,11 @@ export class FilePeer {
   accept(signal: RecoverySignal) { return this.peer.accept(signal); }
   tick(signaling: boolean) {
     const now = Date.now();
-    if (this.channel?.readyState === 'open' && now - this.lastPing >= 1000) {
+    if (this.channel?.readyState === 'open' && now - this.lastPing >= PROBE_INTERVAL_MS) {
       this.lastPing = now;
       try { this.channel.send('ping'); } catch { this.channel.close(); }
     }
-    this.peer.recover(now - this.lastPong < 3000, signaling);
+    this.peer.recover(now - this.lastPong < PROBE_TIMEOUT_MS, signaling);
   }
   close() { this.peer.close(); this.channel?.close(); }
 }
