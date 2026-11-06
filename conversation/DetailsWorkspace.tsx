@@ -43,7 +43,7 @@ export function DetailsWorkspace({ selected, active, children, enabled = true, c
   const hasTabs = Boolean(entry || preview || drawer.tabs.entries.length);
   const tabs = [
     ...(enabled ? [{ id: 'changes', title: t('client.chat.fileChanges.049e14'), icon: <FileDiff size={16} /> }] : []),
-    ...(preview ? [{ id: 'preview', title: t('client.chat.preview'), icon: <FileSearch size={16} /> }] : []),
+    ...(preview ? [{ id: 'preview', title: t('client.configLabels.browser'), icon: <FileSearch size={16} /> }] : []),
     ...drawer.tabs.entries,
   ].filter(tab => !drawer.tabs.closed.has(tab.id));
   const hasOpenTabs = Boolean(enabled && ((entry && !drawer.tabs.closed.has('changes'))
