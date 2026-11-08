@@ -15,7 +15,8 @@ export function MessageEditorImages({ images, removed, disabled, onRemove, rende
       {image.url || image.path ? (renderImage?.(image, index) ?? <MessageImage src={image.url || image.path}
         alt={uiText("client.conversation.imageAttachment", { value1: index + 1 })} />)
         : <span role="status">{uiText("client.conversation.loadingImage")}</span>}
-      <button type="button" className={styles.removeImage} aria-label={uiText("client.chat.removeImage", { value1: index + 1 })}
+      <button type="button" className={styles.removeImage}
+        aria-label={uiText("client.chat.removeImage", { value1: index + 1 })}
         disabled={disabled} onClick={() => onRemove(index)}><X size={14} /></button>
     </div>)}
   </div>;

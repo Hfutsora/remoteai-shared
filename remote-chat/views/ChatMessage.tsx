@@ -55,7 +55,8 @@ export const ChatMessage = memo(function ChatMessage({ item, onOpen, process = f
     {(!!text.trim() || onEdit) && !running && !(desktop && process)
       && <div className="chat-message-actions" data-quote-exclude>
       <ChatCopyButton text={text} label={user ? t("client.chat.copyMessage") : t("client.chat.copyReply")} iconOnly={!user} />
-      {onEdit && <button type="button" className="chat-text-action" aria-label={t('client.workspaceActions.editMessage')}
+      {onEdit && <button type="button" className="chat-text-action"
+        aria-label={t('client.workspaceActions.editMessage')}
         disabled={editDisabled} onClick={onEdit}><Pencil size={14} /></button>}
       <ChatQuoteButton messageId={item.id} text={text} role={user ? 'user' : 'assistant'} onQuote={onQuote} />
     </div>}
