@@ -27,7 +27,13 @@ export function TerminalTabStrip({ tabs, selected, select, remove, removeTabs, v
   const choose = (id: string) => { overflow.reveal(id); select(id); setOpen(false); setMenuId(null); };
   const closeGroup = (ids: string[]) => { removeTabs(ids); setOpen(false); setMenuId(null); };
   const closeTab = (id: string) => { remove(id); setOpen(false); setMenuId(null); };
-  return <div ref={overflow.bar} className={styles.tabsBar}>
+  return <div ref={overflow.bar} className={styles.tabsBar} onKeyDown={event => {
+    if (event.key !== 'Escape' || (!menuId && !open)) return;
+    event.preventDefault(); event.stopPropagation();
+    event.currentTarget.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"][aria-expanded="true"]')
+      ?.focus({ preventScroll: true });
+    setMenuId(null); setOpen(false);
+  }}>
     <div ref={overflow.viewport} className={styles.tabs} role="tablist"
       aria-label={translate('client.chat.terminalTabs')}>
       {tabs.map(tab => <TerminalTabItem key={tab.id} tab={tab} tabs={tabs} selected={selected === tab.id}
