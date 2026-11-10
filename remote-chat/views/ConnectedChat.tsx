@@ -1,4 +1,5 @@
 import { displayText } from '../../localization/browserClient';
+import { TaskRecoveryPrompt } from '../../conversation/recovery/TaskRecoveryPrompt';
 import { displayError } from '../../localization/browserClient';
 import { ImageAiContext } from '../../chat/ImageAiContext';
 import { DesktopUsageContext } from '../../chat/DesktopUsageContext';
@@ -215,6 +216,9 @@ export function ConnectedChat({ chat, device, devices, active, scope, email, cho
       {headerEnd}
     </header>
     {workspacePage && <div className="gui-remote-feature">{workspacePage.content}</div>}
+    <TaskRecoveryPrompt client={controller.taskRecovery}
+      enabled={active && (desktop || Boolean(draggableHeader)) && ready && state.taskRecoverySupported === true}
+      openThread={controller.openRecoveryThread} />
     <div className="chat-scroll chat-notices"><div className="chat-notice-content">
       <ChatTaskStatus state={state} />
       {!!error && <p role="alert" className="chat-error">{displayError(error)}</p>}
