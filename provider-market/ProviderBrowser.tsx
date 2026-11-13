@@ -13,6 +13,7 @@ import { BrowserTabs } from './BrowserTabs';
 import { ProviderWebsiteIcon } from './ProviderWebsiteIcon';
 import { useBrowserBookmarks } from '../browser/bookmarks/useBrowserBookmarks';
 import './providerBrowser.css';
+import '../browser/browserChrome.css';
 import { isTauri } from '@tauri-apps/api/core';
 import { useCompactBrowser } from '../browser/bookmarks/useCompactBrowser';
 import { MobileBrowserToolbar, MobileTabManagerToolbar } from '../browser/MobileBrowserToolbar';
