@@ -244,7 +244,10 @@ function ConnectedChatContent({ chat, device, devices, active, scope, email, cho
       {headerEnd}
       {(desktop || draggableHeader) && <RunningConversations entries={remoteRunningConversations(state)}
         selected={state.selected?.id ?? null} disabled={state.sending || !ready}
-        onSelect={id => { void controller.openRecoveryThread(id); }} onOpen={selectedFromList} />}
+        onSelect={id => {
+          if (state.archived || state.search) void controller.list({ archived: false, search: '' });
+          void controller.openRecoveryThread(id);
+        }} onOpen={selectedFromList} />}
     </header>
     {external && cli && <CliConversationPane cwd={cwd} dictation={controller.dictation} remoteLayout
       readClipboardImages={readClipboardImages} nativeFileDrop={nativeFileDrop}
