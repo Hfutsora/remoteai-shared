@@ -133,7 +133,7 @@ export function BrowserContents(props: BrowserWindowProps & {
       }}>
         {uiText('client.portForwarding.portMapping', {}, props.language)}</BrowserSettingsAction>}
     </>,
-    close: compact ? props.onClose : undefined,
+    reload: compact ? () => home.action(activeId, 'reload') : undefined,
     navigate: url => { if (tab) home.navigate(tab.id, url); },
     newTab: url => { if (tab) props.onPopup(tab.id, url); },
   });
