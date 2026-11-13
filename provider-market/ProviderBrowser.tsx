@@ -32,6 +32,7 @@ export interface BrowserSurfaceProps {
   onPopup: (url: string) => void;
   onLoadingChange?: (loading: boolean) => void;
   hideForModal?: boolean;
+  obscured?: boolean;
 }
 export interface BrowserWindowProps {
   title?: string;
